@@ -1,0 +1,49 @@
+using CSV
+include("Flux.jl")
+
+# imports the stoiciometric array from the csv file "Stoic Array.CSV"
+S = Matrix(CSV.read("Stoic Array.CSV"; header=0))
+
+# imports the atomic array from the csv file "Atomic Array.CSV"
+A = Matrix(CSV.read("Atomic Array.CSV"; header=0))
+
+# imports the flux bounds array from the csv file "Flux Upper and Lower Bounds.CSV"
+v = Matrix(CSV.read("Flux Upper and Lower Bounds.CSV"; header=0))
+
+# imports the species bounds array from the csv file "Species Upper and Lower Bounds.CSV"
+x = Matrix(CSV.read("Species Upper and Lower Bounds.CSV"; header=0))
+
+# creates objective function vector
+c = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,-1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+
+
+# creates the array to check if the elements are balanced.
+E = A'S
+
+# User input variables that define the size of the array which is checked.
+nonTransportRxns = 6
+numofElementsChecked = 6
+# Defines a new array that is just the vs and excludes the bs so that an
+# automatic check can be made below.
+EimportantPart = E[1:nonTransportRxns,1:numofElementsChecked]
+
+# loops through the array A'S and prints the rows that aren't balanced.
+for i in 1:numofElementsChecked
+uniqRxn = 1
+  for j in 1:nonTransportRxns
+    if EimportantPart[j,i] != 0 && uniqRxn == 1
+      if i != 6
+        uniqRxn = 0
+        print("v ",i,"\n")
+      else
+        uniqRxn = 0
+        print("v ",-5,"\n")
+      end
+        print(EimportantPart[1:6,i],"\n")
+    end
+  end
+end
+
+# runs calculate_optimal_flux_distribution
+(objective_value,calculated_flux_array,dual_value_array,uptake_array,status_flag) = calculate_optimal_flux_distribution(S,v,x,c)
+print(calculate_optimal_flux_distribution(S,v,x,c))
